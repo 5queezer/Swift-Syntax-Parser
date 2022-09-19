@@ -33,6 +33,7 @@ class Tokenizer:
 
         item = self._items[self._cursor]
         if isinstance(item, str):
+            # for testing purposes
             item = XmlResponse(encoding='utf-8', body=item, url='').selector
 
         for css, token_type in self.spec:
