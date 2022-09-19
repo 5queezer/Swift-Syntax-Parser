@@ -17,7 +17,8 @@ class ItemParserTests(unittest.TestCase):
                         ('CATEGORY', 'whitespace-item'),
                         ('CATEGORY', '[ whitespace ]')
                     ]}
+        expected = 'whitespace = whitespace-item [ whitespace ] ;'
 
         parser = Parser()
         result = parser.parse(test_items)
-        print(result)
+        self.assertEqual(expected, result)

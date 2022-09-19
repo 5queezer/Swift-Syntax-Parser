@@ -58,27 +58,26 @@ class Parser:
 
         return self.definition()
 
-    def definition(self) -> dict:
+    def definition(self) -> str:
         """
         # Main entry point.
         #
         """
-        return {
-            'name': self.name(),
-            'body': self.statement_list()
-        }
+        return f'{self.name()} = {self.statement_list()} ;'
 
     def name(self):
         name = self._eat('NAME')
         self._eat('IDENTIFIER')
         self._eat('ARROW')
-        return name
+        return name[1]
 
-    def statement_list(self, stop_lookahead=None) -> list:
+    def statement_list(self, stop_lookahead=None) -> str:
         statement_list = [self.statement()]
         while self._lookahead is not None and self._lookahead[0] != stop_lookahead:
             statement_list.append(self.statement())
-        return statement_list
+
+        statement_values = list(map(lambda x: x[1], statement_list))
+        return ' '.join(statement_values)
 
     def statement(self):
         match self._lookahead[0]:
