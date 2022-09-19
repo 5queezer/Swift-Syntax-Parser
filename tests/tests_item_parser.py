@@ -12,10 +12,12 @@ class ItemParserTests(unittest.TestCase):
                       '<span class="syntactic-category"><a href="../ReferenceManual/LexicalStructure.html#grammar_whitespace">whitespace</a></span>',
                       '<a href="../ReferenceManual/LexicalStructure.html#grammar_whitespace">whitespace</a>',
                       '<sub>opt</sub>']
-        expected = [
-            ('NAME', 'whitespace'),
-            ('CATEGORY', 'whitespace-item'),
-        ]
+        expected = {'name': ('NAME', 'whitespace'),
+                    'body': [
+                        ('CATEGORY', 'whitespace-item'),
+                        ('CATEGORY', '[ whitespace ]')
+                    ]}
 
         parser = Parser()
-        parser.parse(test_items)
+        result = parser.parse(test_items)
+        print(result)

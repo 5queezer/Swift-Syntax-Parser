@@ -86,14 +86,15 @@ class Parser:
                 return self.category()
             case 'CODE':
                 return self.code()
-            case 'OPT':
-                return self.opt()
-
 
     def category(self):
         category = self._eat('CATEGORY')
         self._eat('REFERENCE')
-        return category
+        if self._lookahead[0] == 'OPT':
+            self._eat('OPT')
+            return category[0], f'[ {category[1]} ]'
+        else:
+            return category
 
     def code(self):
         category = self._eat('CODE')
