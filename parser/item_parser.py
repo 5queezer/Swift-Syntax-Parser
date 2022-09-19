@@ -1,5 +1,12 @@
+from typing import NamedTuple
+
 from scrapy import Selector
 from scrapy.http import TextResponse, XmlResponse, HtmlResponse
+
+
+class Token(NamedTuple):
+    type: str or None
+    value: str
 
 
 class Tokenizer:
@@ -20,7 +27,7 @@ class Tokenizer:
     def has_more_tokens(self):
         return self._cursor < len(self._items)
 
-    def get_next_token(self) -> tuple[str, str] or None:
+    def get_next_token(self) -> Token or None:
         if not self.has_more_tokens():
             return None
 
@@ -34,10 +41,10 @@ class Tokenizer:
                 continue
             if token_type is None:
                 return self.get_next_token()
-            return token_type, token_value
+            return Token(token_type, token_value)
         raise SyntaxError(f'Unexpected token: "{item.extract()}"')
 
-    def _match(self, css: str, item: Selector):
+    def _match(self, css: str, item: Selector) -> str:
         matched = item.css(css).extract_first()
         if not matched:
             return None
@@ -69,29 +76,29 @@ class Parser:
         name = self._eat('NAME')
         self._eat('IDENTIFIER')
         self._eat('ARROW')
-        return name[1]
+        return name.value
 
     def statement_list(self, stop_lookahead=None) -> str:
         statement_list = [self.statement()]
-        while self._lookahead is not None and self._lookahead[0] != stop_lookahead:
+        while self._lookahead is not None and self._lookahead.type != stop_lookahead:
             statement_list.append(self.statement())
 
-        statement_values = list(map(lambda x: x[1], statement_list))
+        statement_values = list(map(lambda x: x.value, statement_list))
         return ' '.join(statement_values)
 
-    def statement(self):
-        match self._lookahead[0]:
+    def statement(self) -> Token:
+        match self._lookahead.type:
             case 'CATEGORY':
                 return self.category()
             case 'CODE':
                 return self.code()
 
-    def category(self):
+    def category(self) -> Token:
         category = self._eat('CATEGORY')
         self._eat('REFERENCE')
-        if self._lookahead[0] == 'OPT':
+        if self._lookahead.type == 'OPT':
             self._eat('OPT')
-            return category[0], f'[ {category[1]} ]'
+            return Token(category.type, f'[ {category.value} ]')
         else:
             return category
 
@@ -107,7 +114,7 @@ class Parser:
         token = self._lookahead
         if token is None:
             raise SyntaxError(f'Unexpected end of input, expected: {token_type}')
-        if token_type != token[0]:
-            raise SyntaxError(f'Unexpected token: {token[1]}, expected {token_type}')
+        if token_type != token.type:
+            raise SyntaxError(f'Unexpected token: {token.value}, expected {token_type}')
         self._lookahead = self._tokenizer.get_next_token()
         return token
