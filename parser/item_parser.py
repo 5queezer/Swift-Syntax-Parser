@@ -1,7 +1,8 @@
 from typing import Iterator
 
 from scrapy import Selector
-from parser.item_tokenizer import Tokenizer, Token
+from parser.item_tokenizer import Tokenizer
+import humps
 
 
 class Parser:
@@ -26,7 +27,8 @@ class Parser:
 
     def name(self) -> str:
         name = self._eat('NAME')
-        value = name.value.replace('-', ' ')
+        value = humps.camelize(name.value)
+        # value = name.value.replace('-', ' ')
         return value
 
     def statement_list(self, stop_lookahead=None) -> str:
@@ -71,7 +73,8 @@ class Parser:
 
     def category(self) -> str:
         category = self._eat('CATEGORY')
-        value = category.value.replace('-', ' ')
+        value = humps.camelize(category.value)
+        # value = category.value.replace('-', ' ')
         return value
 
     def assignment(self) -> str:
@@ -80,7 +83,10 @@ class Parser:
 
     def terminal_string(self) -> str:
         code = self._eat('CODE')
-        return f'"{code.value}"'
+        if '"' in code.value:
+            return f"'{code.value}'"
+        else:
+            return f'"{code.value}"'
 
     def string(self) -> str:
         text = self._eat('STRING')
