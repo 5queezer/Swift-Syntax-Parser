@@ -26,7 +26,7 @@ class Parser:
 
     def name(self) -> str:
         name = self._eat('NAME')
-        value = name.value.replace('-', '_').upper()
+        value = name.value.replace('-', ' ')
         return value
 
     def statement_list(self, stop_lookahead=None) -> str:
@@ -71,7 +71,7 @@ class Parser:
 
     def category(self) -> str:
         category = self._eat('CATEGORY')
-        value = category.value.replace('-', '_').upper()
+        value = category.value.replace('-', ' ')
         return value
 
     def assignment(self) -> str:

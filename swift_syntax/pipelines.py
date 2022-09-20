@@ -32,6 +32,7 @@ class SwiftSyntaxPipeline():
         title = f'{item["title"]}'
         print()
         print('(* ' + title + ' *)')
+        print()
         for definition in item['defs']:
             self.parse_def(definition)
         print()
