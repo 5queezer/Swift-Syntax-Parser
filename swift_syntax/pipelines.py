@@ -8,12 +8,14 @@
 from itemadapter import ItemAdapter
 from scrapy import Selector
 from swift_syntax.items import SectionItem
+from parser.item_parser import Parser
 
 
 class SwiftSyntaxPipeline():
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
-        if ItemAdapter.is_item_class(SectionItem):
+
+        if adapter.is_item_class(SectionItem):
             self.parse_section(item)
         return item
 
@@ -32,7 +34,9 @@ class SwiftSyntaxPipeline():
         print('(* ' + title + ' *)')
         for definition in item['defs']:
             self.parse_def(definition)
+        print()
 
     def parse_def(self, item: Selector):
-        # e = item.extract()
-        pass
+        parser = Parser()
+        for line in parser.parse(item):
+            print(line)

@@ -9,7 +9,7 @@ class SwiftSpider(scrapy.Spider):
     allowed_domains = ['docs.swift.org']
     start_urls = ['https://docs.swift.org/swift-book/ReferenceManual/zzSummaryOfTheGrammar.html']
 
-    def parse(self, response):
+    def parse(self, response, **kwargs):
         sections = response.selector.css('#summary-of-the-grammar .section')
         return [dict(self.parse_section(x)) for x in sections]
 
@@ -25,6 +25,14 @@ class SwiftSpider(scrapy.Spider):
 
         return AdmonitionGrammarItem(title=title, defs=defs)
 
-    def parse_syntax_def(self, node: Selector):
-        x = node.css('* *').extract()
-        return node
+    @staticmethod
+    def parse_syntax_def(node: Selector):
+        items = node.xpath('*|*/following-sibling::text()')
+        for idx, item in enumerate(items):
+            if not item.extract().strip():
+                # item is not a node and an empty string
+                del items[idx]
+            elif not item.extract().startswith('<'):
+                # item is not a tag, but a string
+                items[idx] = item.extract().strip()
+        return items
