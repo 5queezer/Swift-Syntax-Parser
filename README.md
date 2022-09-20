@@ -14,7 +14,7 @@ pip install -r requirements.txt
 
 Run
 ```
-pyhton main.py
+python main.py
 # or
 scrapy crawl swift
 ```
