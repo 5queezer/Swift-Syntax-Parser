@@ -16,14 +16,14 @@ class Parser:
         self._tokenizer = Tokenizer(items)
         self._lookahead = self._tokenizer.get_next_token()
 
-        yield from self.definition()
+        return self.definition()
 
     def definition(self) -> str:
         """
         # Main entry point.
         #
         """
-        yield f'{self.name()} {self.assignment()} {self.statement_list()} ;'
+        return f'{self.name()} {self.assignment()} {self.statement_list()} ;'
 
     def name(self) -> str:
         name = self._eat('NAME')

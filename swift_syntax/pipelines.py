@@ -39,5 +39,5 @@ class SwiftSyntaxPipeline():
 
     def parse_def(self, item: Selector):
         parser = Parser()
-        for line in parser.parse(item):
-            print(line)
+        line = parser.parse(item)
+        print(line)
