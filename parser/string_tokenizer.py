@@ -5,7 +5,7 @@ spec = [
     (r'U\+([0-9A-Z]+)', 'UNICODE'),
     (r',', 'COMMA'),
     (r'\bor', 'COMMA'),
-    (r'\bfollowed by\b', 'LOOKAHEAD'),
+    (r'\bfollowed by\b', 'SEQUENCE'),
     (r'\bAny\b', 'ANY'),
     (r'\bDigit\b', 'DIGIT'),
     (r'\bthrough\b', 'THROUGH'),

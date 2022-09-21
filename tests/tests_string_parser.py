@@ -34,10 +34,9 @@ class StringParserTests(unittest.TestCase):
 
     def test_parser(self):
         s = 'U+000A'
-        expected = {'type': 'String', 'body': [{
-            'type': 'Unicode',
-            'value': Token(type='UNICODE', value='000A')
-        }]}
+        expected = {'type': 'String', 'body': [
+            {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')}
+        ]}
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
 
@@ -66,6 +65,17 @@ class StringParserTests(unittest.TestCase):
                     {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
                 ]
             }]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_followed_by_sequence(self):
+        s = 'U+000A followed by U+000B'
+        expected = {
+            'type': 'String', 'body': [
+                {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
+                {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
+            ]
         }
         result = self.parser.parse(s)
         self.assertEqual(expected, result)

@@ -39,8 +39,14 @@ class StringParser:
         match self._lookahead.type:
             case 'UNICODE':
                 return self.unicode_alternation()
+            case 'SEQUENCE':
+                return self.sequence()
             case _:
                 return self.char()
+
+    def sequence(self):
+        self._eat('SEQUENCE')
+        return self.unicode_alternation()
 
     def unicode_alternation(self):
         items = [self.unicode()]
@@ -80,6 +86,6 @@ class StringParser:
         if token is None:
             raise SyntaxError(f'Unexpected end of input, expected: {token_type}')
         if token_type != token.type:
-            raise SyntaxError(f'Unexpected token: {token.value}, expected {token_type}')
+            raise SyntaxError(f'Unexpected token: "{token.value}", expected {token_type}')
         self._lookahead = self._tokenizer.get_next_token()
         return token
