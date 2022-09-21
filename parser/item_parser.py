@@ -27,8 +27,7 @@ class Parser:
 
     def name(self) -> str:
         name = self._eat('NAME')
-        value = humps.camelize(name.value)
-        # value = name.value.replace('-', ' ')
+        value = humps.pascalize(name.value)
         return value
 
     def statement_list(self, stop_lookahead=None) -> str:
@@ -73,7 +72,7 @@ class Parser:
 
     def category(self) -> str:
         category = self._eat('CATEGORY')
-        value = humps.camelize(category.value)
+        value = humps.pascalize(category.value)
         # value = category.value.replace('-', ' ')
         return value
 
