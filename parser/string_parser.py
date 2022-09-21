@@ -51,13 +51,9 @@ class StringParser:
             if self.lookahead('ALTERNATION'):
                 self._eat('ALTERNATION')
                 items.append(self.unicode())
-                break
 
         if len(items) == 1:
-            return {
-                'type': 'Unicode',
-                'value': items[0]
-            }
+            return items[0]
         else:
             return {
                 'type': 'Alternation',

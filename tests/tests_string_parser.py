@@ -5,14 +5,10 @@ import re
 
 
 class StringParserTests(unittest.TestCase):
-    lines: list
     parser: StringParser
 
-    @classmethod
-    def setUpClass(cls) -> None:
-        with open('strings.txt') as file:
-            cls.lines = file.readlines()
-            cls.parser = StringParser()
+    def setUp(self):
+        self.parser = StringParser()
 
     def test_single_unicode(self):
         s = 'U+000A'
@@ -40,9 +36,7 @@ class StringParserTests(unittest.TestCase):
         s = 'U+000A'
         expected = {'type': 'String', 'body': [{
             'type': 'Unicode',
-            'value': {
-                'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')
-            }
+            'value': Token(type='UNICODE', value='000A')
         }]}
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
@@ -56,6 +50,20 @@ class StringParserTests(unittest.TestCase):
                     {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
                     {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
                     {'type': 'Unicode', 'value': Token(type='UNICODE', value='000C')}
+                ]
+            }]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_alternation_between_two(self):
+        s = 'U+000A or U+000B'
+        expected = {
+            'type': 'String', 'body': [{
+                'type': 'Alternation',
+                'items': [
+                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
+                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
                 ]
             }]
         }
