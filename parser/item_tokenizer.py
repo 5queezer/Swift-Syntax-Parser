@@ -1,10 +1,6 @@
-from typing import NamedTuple
 from scrapy import Selector
+from parser.token import Token
 import re
-
-class Token(NamedTuple):
-    type: str or None
-    value: str
 
 
 class Tokenizer:

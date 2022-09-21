@@ -90,6 +90,8 @@ class Parser:
     def string(self) -> str:
         text = self._eat('STRING')
         # not implemented for now, return special sequence
+        with open('strings.txt', 'a') as file:
+            file.write(text.value + '\n')
         return f'? {text.value} ?'
 
     def _eat(self, token_type: str):
