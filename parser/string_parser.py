@@ -38,13 +38,19 @@ class StringParser:
     def statement(self):
         match self._lookahead.type:
             case 'UNICODE':
-                return self.unicode_alternation()
+                return self.unicode_range()
             case 'SEQUENCE':
                 return self.sequence()
+            case 'RANGE':
+                return self.range()
             case _:
                 return self.char()
 
-    def sequence(self):
+    def range(self):
+        self._eat('RANGE')
+        return self._eat('UNICODE')
+
+    def unicode_range(self):
         self._eat('SEQUENCE')
         return self.unicode_alternation()
 
