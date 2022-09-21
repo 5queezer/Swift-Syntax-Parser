@@ -3,7 +3,7 @@ from parser.token import Token
 
 spec = [
     (r'U\+([0-9A-Z]+)', 'UNICODE'),
-    (r'\-', 'RANGE'),
+    (r'–', 'RANGE'),
     (r',', 'COMMA'),
     (r'\bor\b', 'OR'),
     (r'\bfollowed by\b', 'SEQUENCE'),
