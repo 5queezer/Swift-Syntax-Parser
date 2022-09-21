@@ -4,7 +4,8 @@ from parser.token import Token
 spec = [
     (r'U\+([0-9A-Z]+)', 'UNICODE'),
     (r',', 'COMMA'),
-    (r'\bor', 'COMMA'),
+    (r'-', 'RANGE'),
+    (r'\bor\b', 'OR'),
     (r'\bfollowed by\b', 'SEQUENCE'),
     (r'\bAny\b', 'ANY'),
     (r'\bDigit\b', 'DIGIT'),

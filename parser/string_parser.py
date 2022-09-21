@@ -57,9 +57,9 @@ class StringParser:
             if self.lookahead_is('UNICODE'):
                 items.append(self.unicode())
 
-            if self.lookahead_is('ALTERNATION'):
-                self._eat('ALTERNATION')
-                items.append(self.unicode())
+        if self.lookahead_is('OR'):
+            self._eat('OR')
+            items.append(self.unicode())
 
         if len(items) == 1:
             return items[0]

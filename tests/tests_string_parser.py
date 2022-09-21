@@ -22,7 +22,7 @@ class StringParserTests(unittest.TestCase):
             Token(type='COMMA', value=','),
             Token(type='UNICODE', value='000B'),
             Token(type='COMMA', value=','),
-            Token(type='COMMA', value='or'),
+            Token(type='OR', value='or'),
             Token(type='UNICODE', value='000C')
         ]
         tokenizer = StringTokenizer(s)
@@ -76,6 +76,18 @@ class StringParserTests(unittest.TestCase):
                 {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
                 {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
             ]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_range(self):
+        s = 'U+000A–U+000B'
+        expected = {
+            'type': 'String', 'body': [{
+                'type': 'Range',
+                'from': {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
+                'to': {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')}
+            }]
         }
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
