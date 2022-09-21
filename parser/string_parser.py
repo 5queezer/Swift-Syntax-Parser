@@ -8,8 +8,11 @@ class StringParser:
         self._tokenizer: StringTokenizer or None = None
         self._lookahead: Token or None = None
 
-    def lookahead(self, *tpe) -> bool:
+    def lookahead_is(self, *tpe) -> bool:
         return self._lookahead and self._lookahead.type in tpe
+
+    def lookahead_is_not(self, *tpe) -> bool:
+        return self._lookahead and self._lookahead.type not in tpe
 
     def parse(self, string) -> dict:
         """
@@ -28,7 +31,7 @@ class StringParser:
 
     def string_list(self, stop_lookahead=None):
         statement_list = [self.statement()]
-        while self._lookahead is not None and self._lookahead.type != stop_lookahead:
+        while self.lookahead_is_not(stop_lookahead):
             statement_list.append(self.statement())
         return statement_list
 
@@ -42,13 +45,13 @@ class StringParser:
     def unicode_alternation(self):
         items = [self.unicode()]
 
-        while self.lookahead('COMMA'):
+        while self.lookahead_is('COMMA'):
             self._eat('COMMA')
 
-            if self.lookahead('UNICODE'):
+            if self.lookahead_is('UNICODE'):
                 items.append(self.unicode())
 
-            if self.lookahead('ALTERNATION'):
+            if self.lookahead_is('ALTERNATION'):
                 self._eat('ALTERNATION')
                 items.append(self.unicode())
 
@@ -61,17 +64,15 @@ class StringParser:
             }
 
     def unicode(self):
-        value = self._eat('UNICODE')
         return {
             'type': 'Unicode',
-            'value': value
+            'value': self._eat('UNICODE')
         }
 
     def char(self):
-        value = self._eat('CHAR')
         return {
             'type': 'Char',
-            'value': value
+            'value': self._eat('CHAR')
         }
 
     def _eat(self, token_type: str):
