@@ -26,33 +26,50 @@ class StringParser:
     def string(self):
         return {
             'type': 'String',
-            'body': self.string_list()
+            'body': self.sequence_list()
         }
 
-    def string_list(self, stop_lookahead=None):
-        statement_list = [self.statement()]
-        while self.lookahead_is_not(stop_lookahead):
-            statement_list.append(self.statement())
-        return statement_list
+    def sequence(self):
+        return self.alternation_expression()
 
-    def statement(self):
-        match self._lookahead.type:
-            case 'UNICODE':
-                return self.unicode_range()
-            case 'SEQUENCE':
-                return self.sequence()
-            case 'RANGE':
-                return self.range()
-            case _:
-                return self.char()
+    def sequence_list(self):
+        first = [self.alternation_expression()]
+        following = []
+        while self.lookahead_is('SEQUENCE'):
+            self._eat('SEQUENCE')
+            following.append(self.alternation_expression())
+        return first + following
 
-    def range(self):
+    def alternation_expression(self):
+        left = self.range_expression()
+        alternations = []
+        while self.lookahead_is('COMMA', 'OR'):
+            if self.lookahead_is('COMMA'):
+                self._eat('COMMA')
+            if self.lookahead_is('OR'):
+                self._eat('OR')
+                alternations.append(self.unicode())
+                break
+            alternations.append(self.unicode())
+
+        if alternations:
+            return {
+                'type': 'Alternation',
+                'items': [left] + alternations
+            }
+        return left
+
+    def range_expression(self):
+        left = self.unicode()
+        if not self.lookahead_is('RANGE'):
+            return left
         self._eat('RANGE')
-        return self._eat('UNICODE')
-
-    def unicode_range(self):
-        self._eat('SEQUENCE')
-        return self.unicode_alternation()
+        right = self.unicode()
+        return {
+            'type': 'Range',
+            'from': left,
+            'to': right
+        }
 
     def unicode_alternation(self):
         items = [self.unicode()]

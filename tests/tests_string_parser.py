@@ -80,6 +80,20 @@ class StringParserTests(unittest.TestCase):
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
 
+    def test_range_token(self):
+        s = 'U+000A–U+000B'
+        expected = [
+            Token(type='UNICODE', value='000A'),
+            Token(type='RANGE', value='–'),
+            Token(type='UNICODE', value='000B'),
+        ]
+        tokenizer = StringTokenizer(s)
+        while True:
+            res = tokenizer.get_next_token()
+            if not res or not res.type: break
+            self.assertTupleEqual(expected.pop(0), res)
+        self.assertSequenceEqual([], expected)
+
     def test_range(self):
         s = 'U+000A–U+000B'
         expected = {
