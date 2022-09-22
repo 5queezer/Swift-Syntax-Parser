@@ -48,9 +48,9 @@ class StringParser:
                 self._eat('COMMA')
             if self.lookahead_is('OR'):
                 self._eat('OR')
-                alternations.append(self.unicode())
+                alternations.append(self.range_expression())
                 break
-            alternations.append(self.unicode())
+            alternations.append(self.range_expression())
 
         if alternations:
             return {
