@@ -11,6 +11,9 @@ class Parser:
         self._tokenizer: Tokenizer or None = None
         self._lookahead: Selector or None = None
 
+    def __del__(self):
+        pass
+
     def parse(self, items) -> Iterator:
         self._items = items
         self._tokenizer = Tokenizer(items)
@@ -27,7 +30,7 @@ class Parser:
 
     def name(self) -> str:
         name = self._eat('NAME')
-        value = humps.pascalize(name.value)
+        value = humps.pascalize(name)
         return value
 
     def statement_list(self, stop_lookahead=None) -> str:
@@ -72,7 +75,7 @@ class Parser:
 
     def category(self) -> str:
         category = self._eat('CATEGORY')
-        value = humps.pascalize(category.value)
+        value = humps.pascalize(category)
         # value = category.value.replace('-', ' ')
         return value
 
@@ -82,17 +85,14 @@ class Parser:
 
     def terminal_string(self) -> str:
         code = self._eat('CODE')
-        if '"' in code.value:
-            return f"'{code.value}'"
+        if '"' in code:
+            return f"'{code}'"
         else:
-            return f'"{code.value}"'
+            return f'"{code}"'
 
     def string(self) -> str:
         text = self._eat('STRING')
-        # not implemented for now, return special sequence
-        with open('strings.txt', 'a') as file:
-            file.write(text.value + '\n')
-        return f'? {text.value} ?'
+        return f'{text}'
 
     def _eat(self, token_type: str):
         token = self._lookahead
@@ -101,4 +101,4 @@ class Parser:
         if token_type != token.type:
             raise SyntaxError(f'Unexpected token: {token.value}, expected {token_type}')
         self._lookahead = self._tokenizer.get_next_token()
-        return token
+        return token.value
