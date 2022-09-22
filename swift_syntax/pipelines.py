@@ -20,7 +20,7 @@ from swift_syntax.items import SectionItem
 
 suffix = '.ebnf'
 basedir = 'grammar'
-
+index_file = os.path.join(basedir, 'index' + suffix)
 
 class SwiftSyntaxPipeline():
     def __init__(self):
@@ -32,15 +32,18 @@ class SwiftSyntaxPipeline():
             except PermissionError:
                 shutil.rmtree(f)
 
+        with open(index_file, 'w') as index:
+            index.write('@@grammar :: swift\n')
+            index.write(r'@@comments :: /\(\*((?:.|\n)*?)\*\)/' + '\n')
+            index.write('\n')
+
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
 
         if adapter.is_item_class(SectionItem):
             dirname = self.parse_section(item)
 
-            include_file = os.path.join(basedir, '_index.ebnf')
-
-            with open(include_file, 'a') as includes:
+            with open(index_file, 'a') as includes:
                 includes.write('#include :: "{}"\n'.format(os.path.join(dirname, '_index' + suffix)))
 
         return item
