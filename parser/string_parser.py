@@ -1,28 +1,6 @@
 from parser.string_tokenizer import StringTokenizer
 from parser.token import Token
 
-unicode_codespace = {
-    'type': 'Range',
-    'from': {'type': 'Unicode', 'value': '0000'},
-    'to': {'type': 'Unicode', 'value': '10FFFF'}
-}
-
-unicode_scalar_value = {
-    'type': 'Alternation',
-    'items': [
-        {
-            'type': 'Range',
-            'from': {'type': 'Unicode', 'value': '0000'},
-            'to': {'type': 'Unicode', 'value': 'D7FF'}
-        },
-        {
-            'type': 'Range',
-            'from': {'type': 'Unicode', 'value': 'E000'},
-            'to': {'type': 'Unicode', 'value': '10FFFF'}
-        }
-    ]
-}
-
 
 class StringParser:
     def __init__(self):
@@ -103,7 +81,9 @@ class StringParser:
     def any_expression(self):
         self._eat('ANY')
         self._eat('UNISCALAR')
-        return unicode_scalar_value
+        return {
+            'type': 'UnicodeScalarValue'
+        }
 
     def unicode_alternation(self):
         items = [self.unicode()]

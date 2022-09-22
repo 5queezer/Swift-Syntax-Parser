@@ -115,19 +115,7 @@ class StringParserTests(unittest.TestCase):
                 {
                     "type": "Exclusion",
                     "left": {
-                        "type": "Alternation",
-                        "items": [
-                            {
-                                "type": "Range",
-                                "from": {'type': 'Unicode', 'value': '0000'},
-                                "to": {'type': 'Unicode', 'value': 'D7FF'},
-                            },
-                            {
-                                "type": "Range",
-                                "from": {'type': 'Unicode', 'value': 'E000'},
-                                "to": {'type': 'Unicode', 'value': '10FFFF'},
-                            },
-                        ],
+                        "type": "UnicodeScalarValue",
                     },
                     "right": {"type": "Unicode", "value": "000A"},
                 }
