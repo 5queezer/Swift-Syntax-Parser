@@ -2,3 +2,4 @@ venv/
 .scrapy/
 outputfile.json
 _trial_*
+grammar/*
