@@ -108,7 +108,6 @@ class StringParserTests(unittest.TestCase):
 
     def test_any_expression(self):
         s = 'Any Unicode scalar value except U+000A or U+000'
-        tokenizer = StringTokenizer(s)
         expected = {
             "type": "String",
             "body": [
@@ -124,3 +123,9 @@ class StringParserTests(unittest.TestCase):
 
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
+
+    def test_upper_lowercase_letter(self):
+        s = 'Upper- or lowercase letter A through Z'
+        t = StringTokenizer(s)
+        while t.has_more_tokens():
+            print(t.get_next_token())

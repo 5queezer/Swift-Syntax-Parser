@@ -40,13 +40,12 @@ class StringParser:
     def alternation_expression(self):
         left = self.range_expression()
         if self.lookahead_is('EXCEPT'):
-            self._eat('EXCEPT')
-            return {
-                'type': 'Exclusion',
-                'left': left,
-                'right': self.range_expression()
-            }
+            return self.except_expression(left)
+        if self.lookahead_is('COMMA', 'OR'):
+            return self.comma_expression(left)
+        return left
 
+    def comma_expression(self, left):
         alternations = []
         while self.lookahead_is('COMMA', 'OR'):
             if self.lookahead_is('COMMA'):
@@ -64,10 +63,25 @@ class StringParser:
             }
         return left
 
+    def except_expression(self, left):
+        self._eat('EXCEPT')
+        return {
+            'type': 'Exclusion',
+            'left': left,
+            'right': self.range_expression()
+        }
+
     def range_expression(self):
         if self.lookahead_is('ANY'):
-            return self.any_expression()
+            return self.any_range()
+        if self.lookahead_is('LETTER'):
+            return self.letter_range()
+        if self.lookahead_is('UNICODE'):
+            return self.unicode_range()
+
+    def unicode_range(self):
         left = self.unicode()
+
         if not self.lookahead_is('RANGE'):
             return left
         self._eat('RANGE')
@@ -78,7 +92,22 @@ class StringParser:
             'to': right
         }
 
-    def any_expression(self):
+    def letter_range(self):
+        """
+        LetterExpression
+            : LETTER CHAR THROUGH CHAR
+        """
+        self._eat('LETTER')
+        left = self.char()
+        self._eat('THROUGH')
+        right = self.char()
+        return {
+            'type': 'Range',
+            'from': left,
+            'to': right
+        }
+
+    def any_range(self):
         self._eat('ANY')
         self._eat('UNISCALAR')
         return {
