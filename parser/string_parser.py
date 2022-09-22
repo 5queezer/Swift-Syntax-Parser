@@ -1,6 +1,28 @@
 from parser.string_tokenizer import StringTokenizer
 from parser.token import Token
 
+unicode_codespace = {
+    'type': 'Range',
+    'from': {'type': 'Unicode', 'value': '0000'},
+    'to': {'type': 'Unicode', 'value': '10FFFF'}
+}
+
+unicode_scalar_value = {
+    'type': 'Alternation',
+    'items': [
+        {
+            'type': 'Range',
+            'from': {'type': 'Unicode', 'value': '0000'},
+            'to': {'type': 'Unicode', 'value': 'D7FF'}
+        },
+        {
+            'type': 'Range',
+            'from': {'type': 'Unicode', 'value': 'E000'},
+            'to': {'type': 'Unicode', 'value': '10FFFF'}
+        }
+    ]
+}
+
 
 class StringParser:
     def __init__(self):
@@ -29,9 +51,6 @@ class StringParser:
             'body': self.sequence_list()
         }
 
-    def sequence(self):
-        return self.alternation_expression()
-
     def sequence_list(self):
         first = [self.alternation_expression()]
         following = []
@@ -42,6 +61,14 @@ class StringParser:
 
     def alternation_expression(self):
         left = self.range_expression()
+        if self.lookahead_is('EXCEPT'):
+            self._eat('EXCEPT')
+            return {
+                'type': 'Exclusion',
+                'left': left,
+                'right': self.range_expression()
+            }
+
         alternations = []
         while self.lookahead_is('COMMA', 'OR'):
             if self.lookahead_is('COMMA'):
@@ -60,6 +87,8 @@ class StringParser:
         return left
 
     def range_expression(self):
+        if self.lookahead_is('ANY'):
+            return self.any_expression()
         left = self.unicode()
         if not self.lookahead_is('RANGE'):
             return left
@@ -70,6 +99,11 @@ class StringParser:
             'from': left,
             'to': right
         }
+
+    def any_expression(self):
+        self._eat('ANY')
+        self._eat('UNISCALAR')
+        return unicode_scalar_value
 
     def unicode_alternation(self):
         items = [self.unicode()]
@@ -111,4 +145,4 @@ class StringParser:
         if token_type != token.type:
             raise SyntaxError(f'Unexpected token: "{token.value}", expected {token_type}')
         self._lookahead = self._tokenizer.get_next_token()
-        return token
+        return token.value

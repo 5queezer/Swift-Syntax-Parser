@@ -35,7 +35,7 @@ class StringParserTests(unittest.TestCase):
     def test_parser(self):
         s = 'U+000A'
         expected = {'type': 'String', 'body': [
-            {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')}
+            {'type': 'Unicode', 'value': '000A'}
         ]}
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
@@ -46,9 +46,9 @@ class StringParserTests(unittest.TestCase):
             'type': 'String', 'body': [{
                 'type': 'Alternation',
                 'items': [
-                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
-                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
-                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000C')}
+                    {'type': 'Unicode', 'value': '000A'},
+                    {'type': 'Unicode', 'value': '000B'},
+                    {'type': 'Unicode', 'value': '000C'}
                 ]
             }]
         }
@@ -61,8 +61,8 @@ class StringParserTests(unittest.TestCase):
             'type': 'String', 'body': [{
                 'type': 'Alternation',
                 'items': [
-                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
-                    {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
+                    {'type': 'Unicode', 'value': '000A'},
+                    {'type': 'Unicode', 'value': '000B'},
                 ]
             }]
         }
@@ -73,8 +73,8 @@ class StringParserTests(unittest.TestCase):
         s = 'U+000A followed by U+000B'
         expected = {
             'type': 'String', 'body': [
-                {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
-                {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')},
+                {'type': 'Unicode', 'value': '000A'},
+                {'type': 'Unicode', 'value': '000B'},
             ]
         }
         result = self.parser.parse(s)
@@ -99,9 +99,40 @@ class StringParserTests(unittest.TestCase):
         expected = {
             'type': 'String', 'body': [{
                 'type': 'Range',
-                'from': {'type': 'Unicode', 'value': Token(type='UNICODE', value='000A')},
-                'to': {'type': 'Unicode', 'value': Token(type='UNICODE', value='000B')}
+                'from': {'type': 'Unicode', 'value': '000A'},
+                'to': {'type': 'Unicode', 'value': '000B'}
             }]
         }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_any_expression(self):
+        s = 'Any Unicode scalar value except U+000A or U+000'
+        tokenizer = StringTokenizer(s)
+        expected = {
+            "type": "String",
+            "body": [
+                {
+                    "type": "Exclusion",
+                    "left": {
+                        "type": "Alternation",
+                        "items": [
+                            {
+                                "type": "Range",
+                                "from": {'type': 'Unicode', 'value': '0000'},
+                                "to": {'type': 'Unicode', 'value': 'D7FF'},
+                            },
+                            {
+                                "type": "Range",
+                                "from": {'type': 'Unicode', 'value': 'E000'},
+                                "to": {'type': 'Unicode', 'value': '10FFFF'},
+                            },
+                        ],
+                    },
+                    "right": {"type": "Unicode", "value": "000A"},
+                }
+            ],
+        }
+
         result = self.parser.parse(s)
         self.assertEqual(expected, result)

@@ -12,6 +12,7 @@ spec = [
     (r'\bthrough\b', 'THROUGH'),
     (r'\bUnicode scalar value\b', 'UNISCALAR'),
     (r'\bUpper- or lowercase letter\b', 'LETTER'),
+    (r'\bexcept\b', 'EXCEPT'),
     (r'\bidentifier\b', 'IDENTIFIER'),
     (r'\bkeyword\b', 'KEYWORD'),
     (r'\bliteral\b', 'LITERAL'),
