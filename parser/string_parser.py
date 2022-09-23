@@ -65,10 +65,11 @@ class StringParser:
 
     def except_expression(self, left):
         self._eat('EXCEPT')
+
         return {
             'type': 'Exclusion',
             'left': left,
-            'right': self.range_expression()
+            'right': self.alternation_expression()
         }
 
     def range_expression(self):

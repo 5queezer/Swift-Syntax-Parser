@@ -116,7 +116,13 @@ class StringParserTests(unittest.TestCase):
                     "left": {
                         "type": "UnicodeScalarValue",
                     },
-                    "right": {"type": "Unicode", "value": "000A"},
+                    "right": {
+                        "type": "Alternation",
+                        "items": [
+                            {"type": "Unicode", "value": "000A"},
+                            {"type": "Unicode", "value": "000"}
+                        ]
+                    },
                 }
             ],
         }
@@ -126,6 +132,16 @@ class StringParserTests(unittest.TestCase):
 
     def test_upper_lowercase_letter(self):
         s = 'Upper- or lowercase letter A through Z'
-        t = StringTokenizer(s)
-        while t.has_more_tokens():
-            print(t.get_next_token())
+        # Token(type='LETTER', value='Upper- or lowercase letter')
+        # Token(type='CHAR', value='A')
+        # Token(type='THROUGH', value='through')
+        # Token(type='CHAR', value='Z')
+        expected = {
+            'type': 'String', 'body': [{
+                'type': 'Range',
+                'from': {'type': 'Char', 'value': 'A'},
+                'to': {'type': 'Char', 'value': 'Z'}
+            }]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
