@@ -9,7 +9,7 @@ import os
 import shutil
 from typing import IO
 
-import humps
+from slugify import slugify
 import re
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
@@ -57,7 +57,7 @@ class SwiftSyntaxPipeline():
         ])
         print(header)
 
-        dirname = humps.kebabize(title.strip().lower())
+        dirname = slugify(title)
         os.makedirs(os.path.join(basedir, dirname))
 
         files = []
@@ -77,7 +77,7 @@ class SwiftSyntaxPipeline():
         print(header)
 
         filename = re.sub(r'Grammar (of)?\s+?(an|a)? ', '', title)
-        filename = humps.kebabize(filename).lower() + suffix
+        filename = slugify(filename) + suffix
         assert filename
         path = os.path.join(basedir, dirname, filename)
         with open(path, 'w') as file:
