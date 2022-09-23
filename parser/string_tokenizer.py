@@ -15,7 +15,6 @@ spec = [
     (r'\bUnicode scalar value\b', 'UNISCALAR'),
     (r'\bUpper- or lowercase letter\b', 'LETTER'),
     (r'\bexcept\b', 'EXCEPT'),
-    (r'\bpunctuation\b', 'PUNCTUATION'),
     (r'\bkeyword\b|\bidentifier\b|\bliteral\b|\bliteral\b|\boperator\b|\bpunctuation\b', 'KEYWORD'),
     (r'\b.\b', 'CHAR'),
     (r'\s+', None),

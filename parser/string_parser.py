@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from parser.string_tokenizer import StringTokenizer
 from parser.token import Token
 
@@ -37,8 +39,8 @@ class StringParser:
             following.append(self.alternation_expression())
         return first + following
 
-    def alternation_expression(self):
-        left = self.range_expression()
+    def alternation_expression(self, left=None):
+        left = left or self.range_expression()
         if self.lookahead_is('EXCEPT'):
             return self.except_expression(left)
         if self.lookahead_is('COMMA', 'OR'):
@@ -47,6 +49,7 @@ class StringParser:
 
     def comma_expression(self, left):
         alternations = []
+
         while self.lookahead_is('COMMA', 'OR'):
             if self.lookahead_is('COMMA'):
                 self._eat('COMMA')
@@ -57,10 +60,7 @@ class StringParser:
             alternations.append(self.range_expression())
 
         if alternations:
-            return {
-                'type': 'Alternation',
-                'items': [left] + alternations
-            }
+            return self._alternation([left] + alternations)
         return left
 
     def except_expression(self, left):
@@ -75,14 +75,14 @@ class StringParser:
     def range_expression(self):
         if self.lookahead_is('ANY'):
             return self.any_range()
-        if self.lookahead_is('LETTER'):
-            return self.letter_range()
         if self.lookahead_is('UNICODE'):
             return self.unicode_range()
         if self.lookahead_is('DIGIT'):
             return self.digit_range()
         if self.lookahead_is('CHAR'):
             return self.char_range()
+        if self.lookahead_is('LETTER'):
+            return self.letter_range()
         return self.keyword()
 
     def _range(self, left, right):
@@ -128,9 +128,21 @@ class StringParser:
         """
         self._eat('LETTER')
         left = self.char()
+        left['value'] = left['value'].lower()
         self._eat('THROUGH')
         right = self.char()
-        return self._range(left, right)
+        right['value'] = right['value'].lower()
+        lower_alternation = deepcopy(self._range(left, right))
+        left['value'] = left['value'].upper()
+        right['value'] = right['value'].upper()
+        upper_alternation = deepcopy(self._range(left, right))
+        return self._alternation([lower_alternation, upper_alternation])
+
+    def _alternation(self, items):
+        return {
+            'type': 'Alternation',
+            'items': items
+        }
 
     def any_range(self):
         self._eat('ANY')
@@ -166,10 +178,7 @@ class StringParser:
         if len(items) == 1:
             return items[0]
         else:
-            return {
-                'type': 'Alternation',
-                'items': items
-            }
+            return self._alternation(items)
 
     def unicode(self):
         return {

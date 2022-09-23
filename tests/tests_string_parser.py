@@ -145,10 +145,21 @@ class StringParserTests(unittest.TestCase):
         # Token(type='CHAR', value='Z')
         expected = {
             'type': 'String', 'body': [{
-                'type': 'Range',
-                'from': {'type': 'Char', 'value': 'A'},
-                'to': {'type': 'Char', 'value': 'Z'}
+                'type': 'Alternation',
+                'items': [
+                    {
+                        'type': 'Range',
+                        'from': {'type': 'Char', 'value': 'a'},
+                        'to': {'type': 'Char', 'value': 'z'}
+                    },
+                    {
+                        'type': 'Range',
+                        'from': {'type': 'Char', 'value': 'A'},
+                        'to': {'type': 'Char', 'value': 'Z'}
+                    }
+                ]
             }]
+
         }
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
