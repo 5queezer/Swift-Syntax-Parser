@@ -1,4 +1,6 @@
 import unittest
+from pprint import pprint
+
 from parser.string_tokenizer import StringTokenizer, Token
 from parser.string_parser import StringParser
 import re
@@ -9,6 +11,11 @@ class StringParserTests(unittest.TestCase):
 
     def setUp(self):
         self.parser = StringParser()
+
+    def print_token(self, s):
+        t = StringTokenizer(s)
+        while t.has_more_tokens():
+            print(t.get_next_token())
 
     def test_single_unicode(self):
         s = 'U+000A'
@@ -144,4 +151,43 @@ class StringParserTests(unittest.TestCase):
             }]
         }
         result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_digit_0_though_9(self):
+        s = 'Digit 0 through 9'
+        result = self.parser.parse(s)
+        expected = {
+            'type': 'String', 'body': [{
+                'type': 'Range',
+                'from': {'type': 'Char', 'value': '0'},
+                'to': {'type': 'Char', 'value': '9'}
+            }]
+        }
+        self.assertEqual(expected, result)
+
+    def test_digit_range_with_alternation(self):
+        s = 'Digit 0 through 9, a through f, or A through F'
+        result = self.parser.parse(s)
+        expected = {
+            'type': 'String', 'body': [{
+                "type": "Alternation",
+                "items": [
+                    {
+                        'type': 'Range',
+                        'from': {'type': 'Char', 'value': '0'},
+                        'to': {'type': 'Char', 'value': '9'}
+                    },
+                    {
+                        'type': 'Range',
+                        'from': {'type': 'Char', 'value': 'a'},
+                        'to': {'type': 'Char', 'value': 'f'}
+                    },
+                    {
+                        'type': 'Range',
+                        'from': {'type': 'Char', 'value': 'A'},
+                        'to': {'type': 'Char', 'value': 'F'}
+                    },
+                ]}
+            ]
+        }
         self.assertEqual(expected, result)

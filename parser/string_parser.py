@@ -79,6 +79,30 @@ class StringParser:
             return self.letter_range()
         if self.lookahead_is('UNICODE'):
             return self.unicode_range()
+        if self.lookahead_is('DIGIT'):
+            return self.digit_range()
+        if self.lookahead_is('CHAR'):
+            return self.char_range()
+
+    def _range(self, left, right):
+        return {
+            'type': 'Range',
+            'from': left,
+            'to': right
+        }
+
+    def char_range(self):
+        left = self.char()
+        self._eat('THROUGH')
+        right = self.char()
+        return self._range(left, right)
+
+    def digit_range(self):
+        self._eat('DIGIT')
+        left = self.char()
+        self._eat('THROUGH')
+        right = self.char()
+        return self._range(left, right)
 
     def unicode_range(self):
         left = self.unicode()
@@ -87,11 +111,7 @@ class StringParser:
             return left
         self._eat('RANGE')
         right = self.unicode()
-        return {
-            'type': 'Range',
-            'from': left,
-            'to': right
-        }
+        return self._range(left, right)
 
     def letter_range(self):
         """
@@ -102,11 +122,7 @@ class StringParser:
         left = self.char()
         self._eat('THROUGH')
         right = self.char()
-        return {
-            'type': 'Range',
-            'from': left,
-            'to': right
-        }
+        return self._range(left, right)
 
     def any_range(self):
         self._eat('ANY')
