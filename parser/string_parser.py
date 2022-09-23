@@ -83,6 +83,7 @@ class StringParser:
             return self.digit_range()
         if self.lookahead_is('CHAR'):
             return self.char_range()
+        return self.keyword()
 
     def _range(self, left, right):
         return {
@@ -133,9 +134,20 @@ class StringParser:
 
     def any_range(self):
         self._eat('ANY')
-        self._eat('UNISCALAR')
+        if self.lookahead_is('UNISCALAR'):
+            self._eat('UNISCALAR')
+            return {
+                'type': 'UnicodeScalarValue'
+            }
+        else:
+            return self.keyword()
+
+    def keyword(self):
+        value = self._eat('KEYWORD').title()
+
         return {
-            'type': 'UnicodeScalarValue'
+            'type': 'Name',
+            'value': value
         }
 
     def unicode_alternation(self):

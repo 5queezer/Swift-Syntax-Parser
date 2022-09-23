@@ -194,12 +194,39 @@ class StringParserTests(unittest.TestCase):
 
     def test_a_decimal_integer_greater_than_zero(self):
         s = 'A decimal integer greater than zero'
-        self.print_token(s)
         expected = {
             'type': 'String', 'body': [{
                 'type': 'Range',
                 'from': {'type': 'Char', 'value': '1'},
                 'to': {'type': 'Char', 'value': '9'}
+            }]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
+
+    def test_any_identifier_keyword_literal_or_operator(self):
+        s = 'Any identifier, keyword, literal, or operator'
+        expected = {
+            'type': 'String', 'body': [{
+                "type": "Alternation",
+                "items": [
+                    {
+                        'type': 'Name',
+                        'value': 'Identifier'
+                    },
+                    {
+                        'type': 'Name',
+                        'value': 'Keyword'
+                    },
+                    {
+                        'type': 'Name',
+                        'value': 'Literal'
+                    },
+                    {
+                        'type': 'Name',
+                        'value': 'Operator'
+                    },
+                ]
             }]
         }
         result = self.parser.parse(s)
