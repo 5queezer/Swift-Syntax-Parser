@@ -99,9 +99,16 @@ class StringParser:
 
     def digit_range(self):
         self._eat('DIGIT')
-        left = self.char()
-        self._eat('THROUGH')
-        right = self.char()
+        if self.lookahead_is('CHAR'):
+            left = self.char()
+            self._eat('THROUGH')
+            right = self.char()
+        else:
+            self._eat('GREATER')
+            left = self.char()
+            left['value'] = chr(ord(left['value']) + 1)
+            right = {'type': 'Char', 'value': '9'}
+
         return self._range(left, right)
 
     def unicode_range(self):
@@ -159,9 +166,17 @@ class StringParser:
         }
 
     def char(self):
+        if self.lookahead_is('CHAR'):
+            value = self._eat('CHAR')
+        elif self.lookahead_is('DIGIT'):
+            value = self._eat('DIGIT')
+        else:
+            self._eat('ZERO')
+            value = '0'
+
         return {
             'type': 'Char',
-            'value': self._eat('CHAR')
+            'value': value
         }
 
     def _eat(self, token_type: str):

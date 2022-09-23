@@ -191,3 +191,16 @@ class StringParserTests(unittest.TestCase):
             ]
         }
         self.assertEqual(expected, result)
+
+    def test_a_decimal_integer_greater_than_zero(self):
+        s = 'A decimal integer greater than zero'
+        self.print_token(s)
+        expected = {
+            'type': 'String', 'body': [{
+                'type': 'Range',
+                'from': {'type': 'Char', 'value': '1'},
+                'to': {'type': 'Char', 'value': '9'}
+            }]
+        }
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)
