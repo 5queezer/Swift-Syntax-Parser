@@ -2,7 +2,8 @@ from typing import Iterator
 
 from scrapy import Selector
 from parser.item_tokenizer import Tokenizer
-import humps
+from humps.main import decamelize, camelize
+from parser.string_parser import StringParser
 
 
 class Parser:
@@ -30,7 +31,7 @@ class Parser:
 
     def name(self) -> str:
         name = self._eat('NAME')
-        value = humps.pascalize(name)
+        value = decamelize(camelize(name))
         return value
 
     def statement_list(self, stop_lookahead=None) -> str:
@@ -75,7 +76,7 @@ class Parser:
 
     def category(self) -> str:
         category = self._eat('CATEGORY')
-        value = humps.pascalize(category)
+        value = decamelize(camelize(category))
         # value = category.value.replace('-', ' ')
         return value
 
@@ -92,7 +93,12 @@ class Parser:
 
     def string(self) -> str:
         text = self._eat('STRING')
-        return f'<{text}>'
+        parser = StringParser()
+
+        try:
+            return parser.parse(text)
+        except SyntaxError:
+            return f'<{text}>'
 
     def _eat(self, token_type: str):
         token = self._lookahead

@@ -10,6 +10,7 @@ import shutil
 from typing import IO
 
 from slugify import slugify
+from humps.main import pascalize,  kebabize
 import re
 # useful for handling different item types with a single interface
 from itemadapter import ItemAdapter
@@ -43,7 +44,7 @@ class SwiftSyntaxPipeline():
         adapter = ItemAdapter(item)
         if isinstance(item, VersionItem):
             version = item.get('name')
-            version = slugify(version)
+            version = pascalize(slugify(version))
             self.index.write(f'@@grammar :: {version}\n')
             self.index.write(r'@@comments :: /\(\*((?:.|\n)*?)\*\)/' + '\n')
             self.index.write('\n')
