@@ -107,14 +107,14 @@ class StringParser:
 
     def digit_range(self):
         self._eat('DIGIT')
-        if self.lookahead_is('CHAR'):
-            left = self.char()
+        left = self.char()
+
+        if self.lookahead_is('THROUGH'):
             self._eat('THROUGH')
             right = self.char()
         else:
             self._eat('GREATER')
-            left = self.char()
-            left['value'] = chr(ord(left) + 1)
+            left = chr(ord(left) + 1)
             right = '9'
 
         range_ = self._range(left, right)
