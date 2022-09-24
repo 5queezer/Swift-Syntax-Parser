@@ -16,35 +16,30 @@ class StringParser:
     def lookahead_is_not(self, *tpe) -> bool:
         return self._lookahead and self._lookahead.type not in tpe
 
-    def parse(self, string) -> dict:
+    def parse(self, string) -> str:
         """
         Parses a string into an AST.
         """
         self._string = string
         self._tokenizer = StringTokenizer(string)
         self._lookahead = self._tokenizer.get_next_token()
-        return self.string()
-
-    def string(self):
-        return {
-            'type': 'String',
-            'body': self.sequence_list()
-        }
+        return self.sequence_list()
 
     def sequence_list(self):
-        first = [self.alternation_expression()]
+        first = [self.choice_expression()]
         following = []
         while self.lookahead_is('SEQUENCE'):
             self._eat('SEQUENCE')
-            following.append(self.alternation_expression())
-        return first + following
+            following.append(self.choice_expression())
+        return ' '.join(first + following)
 
-    def alternation_expression(self, left=None):
+    def choice_expression(self, left=None):
         left = left or self.range_expression()
         if self.lookahead_is('EXCEPT'):
-            return self.except_expression(left)
+            return f'{self.except_expression(left)}'
         if self.lookahead_is('COMMA', 'OR'):
-            return self.comma_expression(left)
+            return f'{self.comma_expression(left)}'
+
         return left
 
     def comma_expression(self, left):
@@ -60,17 +55,13 @@ class StringParser:
             alternations.append(self.range_expression())
 
         if alternations:
-            return self._alternation([left] + alternations)
+            return self._choice([left] + alternations)
         return left
 
     def except_expression(self, left):
         self._eat('EXCEPT')
-
-        return {
-            'type': 'Exclusion',
-            'left': left,
-            'right': self.alternation_expression()
-        }
+        choices = self.choice_expression()
+        return f'{left} ~ {choices}'
 
     def range_expression(self):
         if self.lookahead_is('ANY'):
@@ -79,24 +70,29 @@ class StringParser:
             return self.unicode_range()
         if self.lookahead_is('DIGIT'):
             return self.digit_range()
+        if self.lookahead_is('INTEGER'):
+            return self.integer_range_greater_zero()
         if self.lookahead_is('CHAR'):
             return self.char_range()
         if self.lookahead_is('LETTER'):
             return self.letter_range()
         return self.keyword()
 
-    def _range(self, left, right):
-        return {
-            'type': 'Range',
-            'from': left,
-            'to': right
-        }
+    @staticmethod
+    def _range(left, right):
+        return f'[{left}-{right}]'
+
+    def integer_range_greater_zero(self):
+        self._eat('INTEGER')
+        self._eat('GREATER')
+        self._eat('ZERO')
+        return '/[1-9][0-9]*/'
 
     def char_range(self):
         left = self.char()
         self._eat('THROUGH')
         right = self.char()
-        return self._range(left, right)
+        return f'/{self._range(left, right)}/'
 
     def digit_range(self):
         self._eat('DIGIT')
@@ -107,60 +103,72 @@ class StringParser:
         else:
             self._eat('GREATER')
             left = self.char()
-            left['value'] = chr(ord(left['value']) + 1)
-            right = {'type': 'Char', 'value': '9'}
+            left['value'] = chr(ord(left) + 1)
+            right = '9'
 
-        return self._range(left, right)
+        range_ = self._range(left, right)
+        return f'/{range_}/'
 
     def unicode_range(self):
         left = self.unicode()
 
         if not self.lookahead_is('RANGE'):
-            return left
+            return f'/{left}/'
         self._eat('RANGE')
         right = self.unicode()
-        return self._range(left, right)
+        return f'/{self._range(left, right)}/'
 
     def letter_range(self):
         """
-        LetterExpression
-            : LETTER CHAR THROUGH CHAR
+        Letter
+            : 'Upper- or lowercase letter' CHAR THROUGH CHAR
         """
         self._eat('LETTER')
         left = self.char()
-        left['value'] = left['value'].lower()
         self._eat('THROUGH')
         right = self.char()
-        right['value'] = right['value'].lower()
-        lower_alternation = deepcopy(self._range(left, right))
-        left['value'] = left['value'].upper()
-        right['value'] = right['value'].upper()
-        upper_alternation = deepcopy(self._range(left, right))
-        return self._alternation([lower_alternation, upper_alternation])
+        lower_alternation = deepcopy(self._range(left.lower(), right.lower()))
+        upper_alternation = deepcopy(self._range(left.upper(), right.upper()))
+        choice = self._choice([f'/{lower_alternation}/', f'/{upper_alternation}/'])
+        return choice
 
-    def _alternation(self, items):
-        return {
-            'type': 'Alternation',
-            'items': items
-        }
+    def _choice(self, items):
+        return '( ' + ' | '.join(items) + ' )'
 
     def any_range(self):
         self._eat('ANY')
         if self.lookahead_is('UNISCALAR'):
-            self._eat('UNISCALAR')
-            return {
-                'type': 'UnicodeScalarValue'
-            }
-        else:
+            return self.uniscalar_values()
+        elif self.lookahead_is('KEYWORD'):
             return self.keyword()
 
-    def keyword(self):
-        value = self._eat('KEYWORD').title()
+    def uniscalar_values(self):
+        self._eat('UNISCALAR')
+        uni_scalar_range = (0x0, 0xD7FF), (0xE000, 0x10FFFF)
+        x = self._range(self._unicode_formatter(uni_scalar_range[0][0]),
+                        self._unicode_formatter(uni_scalar_range[0][1]))
+        y = self._range(self._unicode_formatter(uni_scalar_range[1][0]),
+                        self._unicode_formatter(uni_scalar_range[1][1]))
+        a = self._choice([f'/{x}/', f'/{y}/'])
+        return a
 
-        return {
-            'type': 'Name',
-            'value': value
-        }
+    def keyword(self):
+        first = self._eat('KEYWORD')
+        alternations = []
+
+        while self.lookahead_is('COMMA', 'OR'):
+            if self.lookahead_is('COMMA'):
+                self._eat('COMMA')
+            if self.lookahead_is('OR'):
+                self._eat('OR')
+                alternations.append(self._eat('KEYWORD'))
+                break
+            alternations.append(self._eat('KEYWORD'))
+
+        if alternations:
+            return ' | '.join([first] + alternations)
+        else:
+            return first
 
     def unicode_alternation(self):
         items = [self.unicode()]
@@ -178,13 +186,15 @@ class StringParser:
         if len(items) == 1:
             return items[0]
         else:
-            return self._alternation(items)
+            return self._choice(items)
 
     def unicode(self):
-        return {
-            'type': 'Unicode',
-            'value': self._eat('UNICODE')
-        }
+        value = int(self._eat('UNICODE'), 16)
+        return self._unicode_formatter(value)
+
+    @staticmethod
+    def _unicode_formatter(value: int):
+        return r"\U{0:0{1}X}".format(value, 8)
 
     def char(self):
         if self.lookahead_is('CHAR'):
@@ -195,10 +205,7 @@ class StringParser:
             self._eat('ZERO')
             value = '0'
 
-        return {
-            'type': 'Char',
-            'value': value
-        }
+        return value
 
     def _eat(self, token_type: str):
         token = self._lookahead
@@ -208,3 +215,9 @@ class StringParser:
             raise SyntaxError(f'Unexpected token: "{token.value}", expected {token_type}')
         self._lookahead = self._tokenizer.get_next_token()
         return token.value
+
+
+
+
+
+
