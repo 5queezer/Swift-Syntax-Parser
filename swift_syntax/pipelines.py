@@ -16,15 +16,17 @@ from itemadapter import ItemAdapter
 from scrapy import Selector
 
 from parser.item_parser import Parser
-from swift_syntax.items import SectionItem
+from swift_syntax.items import SectionItem, VersionItem
 
 suffix = '.ebnf'
 basedir = 'grammar'
-index_file = os.path.join(basedir, 'index' + suffix)
 
 class SwiftSyntaxPipeline():
     def __init__(self):
         super().__init__()
+        self.index: IO or None = None
+
+    def open_spider(self, spider):
         files = glob.glob(f'{basedir}/*')
         for f in files:
             try:
@@ -32,19 +34,24 @@ class SwiftSyntaxPipeline():
             except PermissionError:
                 shutil.rmtree(f)
 
-        with open(index_file, 'w') as index:
-            index.write('@@grammar :: swift\n')
-            index.write(r'@@comments :: /\(\*((?:.|\n)*?)\*\)/' + '\n')
-            index.write('\n')
+        self.index = open(os.path.join(basedir, 'index' + suffix), 'w')
+
+    def close_spider(self, spider):
+        self.index.close()
 
     def process_item(self, item, spider):
         adapter = ItemAdapter(item)
+        if isinstance(item, VersionItem):
+            version = item.get('name')
+            version = slugify(version)
+            self.index.write(f'@@grammar :: {version}\n')
+            self.index.write(r'@@comments :: /\(\*((?:.|\n)*?)\*\)/' + '\n')
+            self.index.write('\n')
 
-        if adapter.is_item_class(SectionItem):
+        elif adapter.is_item_class(SectionItem):
             dirname = self.parse_section(item)
 
-            with open(index_file, 'a') as includes:
-                includes.write('#include :: "{}"\n'.format(os.path.join(dirname, '_index' + suffix)))
+            self.index.write('#include :: "{}"\n'.format(os.path.join(dirname, '_index' + suffix)))
 
         return item
 

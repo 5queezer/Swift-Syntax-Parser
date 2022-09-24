@@ -6,6 +6,10 @@
 from scrapy import Field, Item
 
 
+class VersionItem(Item):
+    name = Field()
+
+
 class SectionItem(Item):
     title = Field()
     groups = Field()

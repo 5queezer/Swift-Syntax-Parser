@@ -1,7 +1,7 @@
 import scrapy
 from scrapy import Selector
 
-from swift_syntax.items import SectionItem, AdmonitionGrammarItem, SyntaxDefItem
+from swift_syntax.items import SectionItem, AdmonitionGrammarItem, SyntaxDefItem, VersionItem
 
 
 class SwiftSpider(scrapy.Spider):
@@ -10,8 +10,10 @@ class SwiftSpider(scrapy.Spider):
     start_urls = ['https://docs.swift.org/swift-book/ReferenceManual/zzSummaryOfTheGrammar.html']
 
     def parse(self, response, **kwargs):
-        sections = response.selector.css('#summary-of-the-grammar .section')
-        return [dict(self.parse_section(x)) for x in sections]
+        version = response.css('nav h2 div::text').extract_first()
+        yield VersionItem(name=version)
+        sections = response.css('#summary-of-the-grammar .section')
+        yield from [self.parse_section(x) for x in sections].__iter__()
 
     def parse_section(self, node):
         title = node.css('h2::text').extract_first()
