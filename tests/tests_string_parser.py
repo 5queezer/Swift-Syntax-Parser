@@ -85,7 +85,9 @@ class StringParserTests(unittest.TestCase):
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
 
-    @unittest.skip
     def test_between_one_and_eight_hexadecimal_digits(self):
         s = 'Between one and eight hexadecimal digits'
-        regex = r'/[0-9a-fA-F]{1,8}/'
+        expected = r'/[0-9a-fA-F]{1,8}/'
+        self.print_token(s)
+        result = self.parser.parse(s)
+        self.assertEqual(expected, result)

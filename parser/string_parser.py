@@ -66,6 +66,8 @@ class StringParser:
     def range_expression(self):
         if self.lookahead_is('ANY'):
             return self.any_range()
+        if self.lookahead_is('BETWEEN'):
+            return self.between_range()
         if self.lookahead_is('UNICODE'):
             return self.unicode_range()
         if self.lookahead_is('DIGIT'):
@@ -81,6 +83,15 @@ class StringParser:
     @staticmethod
     def _range(left, right):
         return f'[{left}-{right}]'
+
+    def between_range(self):
+        self._eat('BETWEEN')
+        from_ = self.char()
+        self._eat('AND')
+        to = self.char()
+        range_ = f'/[0-9a-fA-F]{{{from_},{to}}}/'
+        return range_
+
 
     def integer_range_greater_zero(self):
         self._eat('INTEGER')
@@ -189,7 +200,7 @@ class StringParser:
             return self._choice(items)
 
     def unicode(self):
-        value = int(self._eat('UNICODE'), 16)
+        value = int(self._eat('UNICODE')[2:], 16)
         return self._unicode_formatter(value)
 
     @staticmethod
@@ -201,9 +212,15 @@ class StringParser:
             value = self._eat('CHAR')
         elif self.lookahead_is('DIGIT'):
             value = self._eat('DIGIT')
-        else:
+        elif self.lookahead_is('ZERO'):
             self._eat('ZERO')
             value = '0'
+        elif self.lookahead_is('ONE'):
+            self._eat('ONE')
+            value = '1'
+        else:
+            self._eat('EIGHT')
+            value = '8'
 
         return value
 

@@ -2,17 +2,20 @@ import re
 from parser.token import Token
 
 spec = [
-    (r'U\+([0-9A-Z]+)', 'UNICODE'),
+    (r'U\+[0-9A-Z]+', 'UNICODE'),
     (r'–', 'RANGE'),
     (r',', 'COMMA'),
     (r'\bor\b', 'OR'),
     (r'\bfollowed by\b', 'SEQUENCE'),
     (r'\bgreater than\b', 'GREATER'),
+    (r'\bBetween\b', 'BETWEEN'),
+    (r'\band\b', 'AND'),
     (r'\bzero\b', 'ZERO'),
     (r'\bone\b', 'ONE'),
     (r'\beight\b', 'EIGHT'),
     (r'\bAny\b', 'ANY'),
     (r'\bDigit\b', 'DIGIT'),
+    (r'\bhexadecimal digit(s)?\b', 'HEXDIGIT'),
     (r'\bA decimal integer\b', 'INTEGER'),
     (r'\bthrough\b', 'THROUGH'),
     (r'\bUnicode scalar value\b', 'UNISCALAR'),
@@ -49,7 +52,4 @@ class StringTokenizer:
         if not matched:
             return None
         self._cursor += len(matched.group(0))
-        if matched.groups():
-            return matched.groups()[-1]
-        else:
-            return matched.group(0)
+        return matched.group(0)
