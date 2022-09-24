@@ -92,7 +92,7 @@ class Parser:
 
     def string(self) -> str:
         text = self._eat('STRING')
-        return f'{text}'
+        return f'<{text}>'
 
     def _eat(self, token_type: str):
         token = self._lookahead

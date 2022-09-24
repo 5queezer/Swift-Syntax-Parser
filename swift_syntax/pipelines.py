@@ -53,7 +53,8 @@ class SwiftSyntaxPipeline():
         header = '\n'.join([
             '(* ' + len(title) * '-' + ' *)',
             '(* ' + title + ' *)',
-            '(* ' + len(title) * '-' + ' *)'
+            '(* ' + len(title) * '-' + ' *)',
+            '\n'
         ])
         print(header)
 
@@ -63,10 +64,10 @@ class SwiftSyntaxPipeline():
         files = []
         for group in item['groups']:
             files.append(self.parse_group(group, dirname))
-        print()
 
         include_file = os.path.join(basedir, dirname, '_index' + suffix)
         with open(include_file, 'w') as includes:
+            includes.write(header)
             includes.writelines(map(lambda filename: f'#include :: "{filename}"\n', files))
         return dirname
 
