@@ -112,6 +112,10 @@ class StringParser:
         if self.lookahead_is('THROUGH'):
             self._eat('THROUGH')
             right = self.char()
+        elif self.lookahead_is('OR'):
+            self._eat('OR')
+            right = self.char()
+            return self.digit_alternation([left, right])
         else:
             self._eat('GREATER')
             left = chr(ord(left) + 1)
@@ -180,6 +184,9 @@ class StringParser:
             return ' | '.join([first] + alternations)
         else:
             return first
+
+    def digit_alternation(self, items):
+        return ' | '.join(f'"{item}"' for item in items)
 
     def unicode_alternation(self):
         items = [self.unicode()]

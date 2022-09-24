@@ -91,9 +91,8 @@ class StringParserTests(unittest.TestCase):
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
 
-    @unittest.skip
     def test_digit_0_or_1(self):
         s = 'Digit 0 or 1'
-        expected = '/[01]/'
+        expected = '"0" | "1"'
         result = self.parser.parse(s)
         self.assertEqual(expected, result)
